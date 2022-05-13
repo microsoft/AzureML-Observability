@@ -1,0 +1,19 @@
+$schema: https://azuremlschemas.azureedge.net/latest/managedOnlineDeployment.schema.json
+name: blue
+endpoint_name: iris-ep
+model: azureml:sklearn-iris:2
+code_configuration:
+  code: ./
+  scoring_script: realtime_score.py
+environment:
+  conda_file: ./conda_dependencies.yml
+  image: mcr.microsoft.com/azureml/openmpi3.1.2-ubuntu18.04:20210727.v1
+instance_type: STANDARD_DS3_V2
+instance_count: 1
+environment_variables: 
+  TENANT_ID: "72f988bf-86f1-41af-91ab-2d7cd011db47"
+  TABLE_NAME: "IRIS_MODEL"
+  SUBSCRIPTION_ID: "0e9bace8-7a81-4922-83b5-d995ff706507" 
+  SP_ID: PROVIDED_AT_RUNT_TIME
+  SP_SECRET: PROVIDED_AT_RUNT_TIME
+  
