@@ -4,7 +4,7 @@ with open("../README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
     name='aml-obs-client',
-    version='0.0.5',
+    version='0.0.1',
     author='James Nguyen; Nicole Serafino',
     author_email='janguy@microsoft.com;nserafino@microsoft.com',
     description='Testing installation of Package',
@@ -15,6 +15,6 @@ setuptools.setup(
         "Bug Tracker": "https://github.com/microsoft/AzureML-Observability/issues"
     },
     license='MIT',
-    packages=['monitoring'],
+    packages=['aml-obs-client'],
     install_requires=['azure-kusto-data==3.1.2','jupyter-dash==0.4.2'],
 )
