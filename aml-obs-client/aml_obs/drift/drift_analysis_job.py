@@ -1,15 +1,13 @@
 import os
-from azure.ml import MLClient
-from azure.ml import command, Input
+from azure.ai.ml import MLClient
+from azure.ai.ml import command, Input
 from azure.identity import DefaultAzureCredential
-from azure.ml.entities import Environment, BuildContext
+from azure.ai.ml.entities import Environment, BuildContext
+
 from textwrap import dedent
 import shutil
-
-
-def execute_drift_detect_job(subscription_id="0e9bace8-7a81-4922-83b5-d995ff706507",resource_group="azureml",workspace="ws01ent", compute_name ='DS11', experiment_name= "drift-analysis-job", base_table_name ="ISDWeather", 
-target_table_name ="ISDWeather", base_dt_from ="2013-04-13", base_dt_to= "2014-05-13",target_dt_from="2013-04-13", target_dt_to="2014-05-13", bin="7d", limit=3000000):
-
+def execute_drift_detect_job(subscription_id,resource_group,workspace, compute_name, base_table_name, 
+target_table_name, base_dt_from ,base_dt_to,target_dt_from, target_dt_to, experiment_name= "drift-analysis-job", bin="1d", limit=100000):
     ml_client = MLClient(
         DefaultAzureCredential(), subscription_id, resource_group, workspace
     )
@@ -33,7 +31,7 @@ target_table_name ="ISDWeather", base_dt_from ="2013-04-13", base_dt_to= "2014-0
         - azureml-defaults==1.41.0
         - pandas
         - --extra-index-url https://azuremlsdktestpypi.azureedge.net/sdk-cli-v2
-        - azure-ml==0.0.61212840
+        - azure-ai-ml==0.0.62653692
         - git+https://github.com/microsoft/AzureML-Observability#subdirectory=aml-obs-client
         - git+https://github.com/microsoft/AzureML-Observability#subdirectory=aml-obs-collector
     - matplotlib
@@ -128,4 +126,3 @@ target_table_name ="ISDWeather", base_dt_from ="2013-04-13", base_dt_to= "2014-0
 
     returned_job = ml_client.create_or_update(job)
     shutil.rmtree(".tmp")
-    

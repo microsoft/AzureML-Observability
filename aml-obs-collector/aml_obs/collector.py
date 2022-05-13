@@ -108,10 +108,10 @@ class Online_Collector():
         type_mapping = {
             "object":"string",
             "datetime64[ns]":"datetime",
-            "int32":"int",
-            "int64":"int",
-            "float64":"real",
-            "float32":"real",
+            "Int32":"int",
+            "Int64":"int",
+            "Float64":"real",
+            "Float32":"real",
 
         }
 
