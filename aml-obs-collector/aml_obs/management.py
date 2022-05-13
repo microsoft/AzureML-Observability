@@ -1,4 +1,4 @@
-from obs import KV_SP_ID, KV_SP_KEY, KV_ADX_DB, KV_ADX_URI, KV_TENANT_ID,SP_NAME_PF
+from aml_obs import KV_SP_ID, KV_SP_KEY, KV_ADX_DB, KV_ADX_URI, KV_TENANT_ID,SP_NAME_PF
 from azure.mgmt.kusto import KustoManagementClient
 from azure.mgmt.kusto.models import Cluster, AzureSku
 from azure.common.credentials import ServicePrincipalCredentials
