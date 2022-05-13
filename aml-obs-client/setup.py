@@ -17,6 +17,6 @@ setuptools.setup(
         "Bug Tracker": "https://github.com/microsoft/AzureML-Observability/issues"
     },
     license='MIT',
-    packages=find_packages('aml_obs'),
+    packages= find_packages(exclude=["tests"]),
     install_requires=['azure-kusto-data==3.1.2','jupyter-dash==0.4.2'],
 )
