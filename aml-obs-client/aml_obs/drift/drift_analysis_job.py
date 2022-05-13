@@ -34,7 +34,8 @@ target_table_name ="ISDWeather", base_dt_from ="2013-04-13", base_dt_to= "2014-0
         - pandas
         - --extra-index-url https://azuremlsdktestpypi.azureedge.net/sdk-cli-v2
         - azure-ml==0.0.61212840
-        - git+https://github.com/microsoft/MLOpsTemplate.git@monitoring-main#subdirectory=src/utilities
+        - git+https://github.com/microsoft/AzureML-Observability#subdirectory=aml-obs-client
+        - git+https://github.com/microsoft/AzureML-Observability#subdirectory=aml-obs-collector
     - matplotlib
     - pip < 20.3
     name: drift_detection
@@ -44,8 +45,8 @@ target_table_name ="ISDWeather", base_dt_from ="2013-04-13", base_dt_to= "2014-0
     import sys
     import os
     sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
-    from monitoring.drift_analysis import Drift_Analysis
-    from monitoring.data_collector import Online_Collector
+    from aml_obs.drift import Drift_Analysis
+    from aml_obs.collector import Online_Collector
     import calendar;
     import time;
     import argparse
