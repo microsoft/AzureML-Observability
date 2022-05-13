@@ -148,7 +148,7 @@ class Drift_Analysis():
             cat_feature_list_with_quote = cat_feature_list_with_quote+f"'{feature}'"+","
         cat_feature_list_with_quote = cat_feature_list_with_quote[:-1]
         for feature in categorical_columns:
-            cat_feature_list = cat_feature_list+feature+","
+            cat_feature_list = cat_feature_list+f"['{feature}']"+","
         cat_feature_list = cat_feature_list[:-1]
         query =f"""
 let categorical_features = dynamic([{cat_feature_list_with_quote}]);
@@ -213,7 +213,7 @@ result['euclidean'] =distance2
             num_feature_list_with_quote = num_feature_list_with_quote+f"'{feature}'"+","
         num_feature_list_with_quote = num_feature_list_with_quote[:-1]
         for feature in numerical_columns:
-            num_feature_list = num_feature_list+feature+","
+            num_feature_list = num_feature_list+f"['{feature}']"+","
         num_feature_list = num_feature_list[:-1]
         query = f"""
 let numeric_features = dynamic([{num_feature_list_with_quote}]);
