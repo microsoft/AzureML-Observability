@@ -158,7 +158,7 @@ let target =
 | limit {limit}
 | project ['{time_stamp_col}'], {cat_feature_list}, properties = pack_all()
 | mv-apply categorical_feature = categorical_features to typeof(string) on (
-    project categorical_feature, categorical_feature_value = tolong(properties[categorical_feature])
+    project categorical_feature, categorical_feature_value = tostring(properties[categorical_feature])
 )
 | project-away properties, {cat_feature_list}
 | summarize target_categorical_feature_value = make_list(categorical_feature_value), target_dcount= dcount(categorical_feature_value) by target_start_date=bin(['{time_stamp_col}'],{bin}),categorical_feature
@@ -168,7 +168,7 @@ let target =
 | limit {limit}
 | project ['{time_stamp_col}'], {cat_feature_list}, properties = pack_all()
 | mv-apply categorical_feature = categorical_features to typeof(string) on (
-    project categorical_feature, categorical_feature_value = tolong(properties[categorical_feature])
+    project categorical_feature, categorical_feature_value = tostring(properties[categorical_feature])
 )
 | project-away properties, {cat_feature_list}
 | summarize base_categorical_feature_value = make_list(categorical_feature_value), base_dcount= dcount(categorical_feature_value) by categorical_feature
@@ -180,21 +180,24 @@ typeof(*, euclidean:double),               //  Output schema: append a new fx co
 ```
 #from scipy.special import kl_div
 from scipy.spatial import distance
-from scipy.stats import wasserstein_distance
+from sklearn import preprocessing
 import random
 import numpy as np
 result = df
 n = df.shape[0]
 distance2 =[]
+le = preprocessing.LabelEncoder()
+
 for i in range(n):
     base_features = df["base_categorical_feature_value"][i]
     target_features = df["target_categorical_feature_value"][i]
+    le.fit(base_features+target_features)
     if len(target_features) > len(base_features):
         target_features = random.sample(target_features, len(base_features))
     elif len(target_features) < len(base_features):
         base_features = random.sample(base_features, len(target_features))
 
-    distance2.append(distance.euclidean(base_features, target_features))
+    distance2.append(distance.euclidean(le.transform(base_features), le.transform(target_features)))
 result['euclidean'] =distance2
 
 ```
@@ -223,7 +226,7 @@ let target =
 | limit {limit}
 | project ['{time_stamp_col}'], {num_feature_list}, properties = pack_all()
 | mv-apply numeric_feature = numeric_features to typeof(string) on (
-    project numeric_feature, numeric_feature_value = tolong(properties[numeric_feature])
+    project numeric_feature, numeric_feature_value = todouble(properties[numeric_feature])
 )
 | project-away properties, {num_feature_list}
 | summarize  target_numeric_feature_value = make_list(numeric_feature_value), target_min = min(numeric_feature_value), target_max= max(numeric_feature_value), target_mean =percentiles(numeric_feature_value,50) by target_start_date=bin(['{time_stamp_col}'],{bin}), numeric_feature
@@ -233,7 +236,7 @@ let target =
 | limit {limit}
 | project {num_feature_list}, properties = pack_all()
 | mv-apply numeric_feature = numeric_features to typeof(string) on (
-    project numeric_feature, numeric_feature_value = tolong(properties[numeric_feature])
+    project numeric_feature, numeric_feature_value = todouble(properties[numeric_feature])
 )
 | project-away properties, {num_feature_list}
 | summarize  base_numeric_feature_value = make_list(numeric_feature_value), base_min = min(numeric_feature_value), base_max= max(numeric_feature_value), base_mean =percentiles(numeric_feature_value,50) by numeric_feature
@@ -291,7 +294,7 @@ let categorical_features = dynamic([{cat_feature_list_with_quote}]);
 | where ['{time_stamp_col}'] >= datetime('{target_dt_from}') and ['{time_stamp_col}'] <= datetime('{target_dt_to}') 
 | project ['{time_stamp_col}'], {cat_feature_list}, properties = pack_all()
 | mv-apply categorical_feature = categorical_features to typeof(string) on (
-    project categorical_feature, categorical_feature_value = tolong(properties[categorical_feature])
+    project categorical_feature, categorical_feature_value = tostring(properties[categorical_feature])
 )
 |summarize count = count() by categorical_feature, categorical_feature_value, bin(['{time_stamp_col}'],{bin})
 |summarize value_list= make_list(categorical_feature_value), count_list = make_list(['count']) by ['{time_stamp_col}'],feature =categorical_feature
