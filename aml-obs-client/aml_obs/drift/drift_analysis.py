@@ -283,7 +283,7 @@ result['wasserstein'] =distance1
             cat_feature_list_with_quote = cat_feature_list_with_quote+f"'{feature}'"+","
         cat_feature_list_with_quote = cat_feature_list_with_quote[:-1]
         for feature in categorical_columns:
-            cat_feature_list = cat_feature_list+feature+","
+            cat_feature_list = cat_feature_list+f"['{feature}']"+","
         cat_feature_list = cat_feature_list[:-1]
         query =f"""
 let categorical_features = dynamic([{cat_feature_list_with_quote}]);
@@ -300,7 +300,7 @@ let categorical_features = dynamic([{cat_feature_list_with_quote}]);
         return self.query(query)
     
     def get_numerical_column_distribution(self, numerical_column, time_stamp_col,target_table_name, target_dt_from, target_dt_to, bin):
-
+        numerical_column = f"['{numerical_column}']"
         query = f"""
 let tbl = {target_table_name}| where ['{time_stamp_col}'] >= datetime('{target_dt_from}') and ['{time_stamp_col}'] <= datetime('{target_dt_to}');
 let bin_size_temp = toscalar(tbl|summarize (max({numerical_column})- min({numerical_column}))/50);
