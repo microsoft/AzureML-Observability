@@ -81,7 +81,7 @@ target_table_name, base_dt_from ,base_dt_to,target_dt_from, target_dt_to, experi
         df_output['base_end_date']=pd.to_datetime(args.base_dt_to)
         # df_output['target_start_date']=pd.to_datetime(df_output['target_start_date'])
         # df_output['target_end_date']=pd.to_datetime(df_output['target_end_date'])
-        df_output.drop(['target_end_date_x','target_end_date_y'], axis =1)
+        # df_output.drop(['target_end_date_x','target_end_date_y'], axis =1)
         df_output['run_id'] = run_id
         for metric in ['wasserstein', 'base_min', 'base_max','base_mean','target_min', 'target_max','target_mean', 'euclidean','base_dcount','target_dcount']:
             df_output[metric]= df_output[metric].astype("float")
