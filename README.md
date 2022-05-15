@@ -1,14 +1,25 @@
 # Project
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+### The Azure ML Observability solution accelerator provides libraries for model monitoring and data drift analysis.
+<br>To install early release version:
+1. For Data Collection to ingest data: 
 
-As the maintainer of this project, please make a few updates:
+    ```pip install git+https://github.com/microsoft/AzureML-Observability#subdirectory=aml-obs-collector```  
+2. For client library: 
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+    ```pip install git+https://github.com/microsoft/AzureML-Observability#subdirectory=aml-obs-client```
+
+    ```pip install azure-ai-ml==0.0.62653692 --extra-index-url https://azuremlsdktestpypi.azureedge.net/sdk-cli-v2```
+## Overview
+<br>
+
+![Overview](./media/aml_obs_overview.png)
+
+## Architecture
+### The solution is built on top of Azure Data Explorer and Azure ML.
+<br>
+
+![Architecture](./media/architecture.png)
 
 ## Contributing
 
