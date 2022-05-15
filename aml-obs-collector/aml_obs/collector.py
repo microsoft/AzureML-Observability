@@ -108,11 +108,14 @@ class Online_Collector():
         type_mapping = {
             "object":"string",
             "datetime64[ns]":"datetime",
+            "Int32":"int",
+            "Int64":"int",
             "int32":"int",
             "int64":"int",
+            "Float64":"real",
+            "Float32":"real",
             "float64":"real",
             "float32":"real",
-
         }
 
         CREATE_TABLE_COMMAND =f".create table {self.table_name} ("

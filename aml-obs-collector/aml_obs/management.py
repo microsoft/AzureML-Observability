@@ -3,7 +3,7 @@ from azure.mgmt.kusto import KustoManagementClient
 from azure.mgmt.kusto.models import Cluster, AzureSku
 from azure.common.credentials import ServicePrincipalCredentials
 from azure.mgmt.kusto import KustoManagementClient
-from azure.mgmt.kusto.models import Cluster, AzureSku
+from azure.mgmt.kusto.models import Cluster, AzureSku,LanguageExtension, LanguageExtensionsList
 from azure.mgmt.kusto.models import ReadWriteDatabase
 from azure.mgmt.kusto.models import DatabasePrincipalAssignment
 from azure.identity import ClientSecretCredential 
@@ -18,7 +18,7 @@ import random
 def create_adx_cluster(resource_group_name, cluster_name,location,sku_name,capacity,tier,credentials,subscription_id,database_name,principal_id,tenantId ):
     print(f"begin creating ADX cluster {cluster_name} at {location} with {sku_name} and capacity {capacity}")
 
-    cluster = Cluster(location=location, sku=AzureSku(name=sku_name, capacity=capacity, tier=tier),enable_streaming_ingest=True)
+    cluster = Cluster(location=location, sku=AzureSku(name=sku_name, capacity=capacity, tier=tier),enable_streaming_ingest=True, )
 
     kusto_management_client = KustoManagementClient(credentials, subscription_id)
 
@@ -27,6 +27,11 @@ def create_adx_cluster(resource_group_name, cluster_name,location,sku_name,capac
     poller = cluster_operations.begin_create_or_update(resource_group_name, cluster_name, cluster)
     poller.wait()
     print(f"finished creating cluster {cluster_name}")
+    print(f"Beging enabling Python for {cluster_name}")
+
+    poller = cluster_operations.begin_add_language_extensions(resource_group_name, cluster_name, LanguageExtensionsList(value=[LanguageExtension(language_extension_name="PYTHON")]))
+    poller.wait()
+    print(f"Finished enabling Python for {cluster_name}")
 
     soft_delete_period = timedelta(days=3650)
     hot_cache_period = timedelta(days=3650)
