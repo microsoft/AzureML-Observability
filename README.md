@@ -21,6 +21,12 @@
 
 ![Architecture](./media/architecture.png)
 
+## Quick Start
+Check out quick start notebooks
+<br>[1. Solution provisioning ](./quick_start/0_provision.ipynb)
+<br>[2. Monitoring](./quick_start/1_monitoring.ipynb)
+<br>[3. Drift](./quick_start/2_drift.ipynb)
+
 ## Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
