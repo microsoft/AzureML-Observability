@@ -1,4 +1,4 @@
-from azure.kusto.data import KustoClient, KustoConnectionStringBuilder
+from azure.kusto.data import KustoClient, KustoConnectionStringBuilder,ClientRequestProperties
 from aml_obs import KV_SP_ID, KV_SP_KEY, KV_ADX_DB, KV_ADX_URI, KV_TENANT_ID
 from azure.kusto.data.helpers import dataframe_from_result_table
 import plotly.graph_objects as go
@@ -32,8 +32,11 @@ class KustoQuery():
         KCSB_DATA_INGEST = KustoConnectionStringBuilder.with_aad_application_key_authentication(self.cluster_ingest_uri, self.client_id, self.client_secret, self.tenant_id)
         self.kusto_client = KustoClient(KCSB_DATA)
         self.queue_client = QueuedIngestClient(KCSB_DATA_INGEST)
+        self.client_req_properties = ClientRequestProperties()
+        self.client_req_properties.set_option(self.client_req_properties.no_request_timeout_option_name , True)
+
     def query(self, query):
-        response = self.kusto_client.execute(self.database_name, query)
+        response = self.client.execute(self.database_name, query, self.client_req_properties)
         dataframe = dataframe_from_result_table(response.primary_results[0])
         return dataframe
     def retrieve_last_records(self,ts_col_name = "timestamp", max_records = 1000, ago ='5m', metric=None, agg=None, bin=None, groupby=None):
@@ -43,8 +46,7 @@ class KustoQuery():
         else:
             query = f"{self.table_name}|where {ts_col_name}> ago({ago})| summarize {metric} = {agg}({metric}) by {groupby}, bin(['{ts_col_name}']\
             ,{bin})| sort by {ts_col_name}|take({max_records})"
-        response = self.kusto_client.execute(self.database_name, query)
-        dataframe = dataframe_from_result_table(response.primary_results[0])
+        dataframe = self.query(query)
         return dataframe
 
     def anomaly_detection(self, min_t, max_t, step, metric, agg, ts_col, groupby, sensitivity=1.5, filter=None):
