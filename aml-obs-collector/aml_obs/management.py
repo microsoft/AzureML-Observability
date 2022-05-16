@@ -121,3 +121,18 @@ def provision(ws=None, tenant_id =None, location=None, client_id = None, client_
     else:
         create_adx_cluster(resource_group_name, cluster_name,location,sku_name,capacity,tier,credentials,subscription_id,database_name,client_id,tenant_id )
 
+def set_adx_to_workspace(ws, cluster_uri,db_name, client_id, client_secret, subscription_id=None, tenant_id =None):
+
+    #Assign a existing ADX cluster to the workspace 
+    kv = ws.get_default_keyvault()
+
+    ws_detail = ws.get_details()
+    if tenant_id is None:
+        tenant_id = ws_detail['identity']['tenant_id']
+    if subscription_id is None:
+        subscription_id = ws_detail['id'].split("/")[2]
+    kv.set_secret(KV_SP_ID,client_id)
+    kv.set_secret(KV_SP_KEY,client_secret)
+    kv.set_secret(KV_ADX_DB,db_name)
+    kv.set_secret(KV_ADX_URI,cluster_uri)
+    kv.set_secret(KV_TENANT_ID,tenant_id)
