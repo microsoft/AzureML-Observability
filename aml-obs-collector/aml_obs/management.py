@@ -72,6 +72,8 @@ def create_service_principal(sp_name, subscription_id, resource_group_name, keyv
 
 def azlogin(tenant_id):
     cmd = f"az login --tenant {tenant_id}"
+    print("if the login screen does not pop-up, please copy and run the following command to login")
+    print(cmd)
     result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
 
     return result
