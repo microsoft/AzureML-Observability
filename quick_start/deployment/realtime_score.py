@@ -31,16 +31,19 @@ def init():
     subscription_id = os.environ.get("SUBSCRIPTION_ID")
     client_secret = os.environ.get("SP_SECRET")
     client_id = os.environ.get("SP_ID")
+    ws_name = os.environ.get("WS_NAME")
+    rg = os.environ.get("RG")
+
     # cluster_uri = os.environ.get("CLUSTER_URI")
     # database_name = os.environ.get("DATABASE_NAME")
     sp = ServicePrincipalAuthentication(tenant_id=tenant_id, # tenantID
                                     service_principal_id=client_id, # clientId
                                     service_principal_password=client_secret) # clientSecret
 
-    ws = Workspace.get(name="ws01ent",
+    ws = Workspace.get(name=ws_name,
                    auth=sp,
                    subscription_id=subscription_id,
-                   resource_group="azureml")
+                   resource_group=rg)
     collector = Online_Collector(table_name,ws)
     collector.start_logging_daemon(buffer_time=2, batch_size=10)
     logging.info("Init complete")

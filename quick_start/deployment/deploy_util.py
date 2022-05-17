@@ -5,6 +5,7 @@ import urllib.request
 import json
 import pandas as pd
 
+
 def deploy_model(ws, online_endpoint_name=None,create_endpoint=True, install_cli_v2=True, deploy_model=True):
 
     kv = ws.get_default_keyvault()
@@ -51,7 +52,7 @@ def deploy_model(ws, online_endpoint_name=None,create_endpoint=True, install_cli
         print("Deploy ML model ")
         sp_id = kv.get_secret(KV_SP_ID)
         sp_secret = kv.get_secret(KV_SP_KEY)
-        deployment_cmd = f"az ml online-deployment create --name blue --endpoint {online_endpoint_name}  -f deployment/realtime_score.yml --set environment_variables.TENANT_ID={tenant_id} environment_variables.TABLE_NAME=IRIS_MODEL  environment_variables.SUBSCRIPTION_ID={subscription_id} environment_variables.SP_ID={sp_id} environment_variables.SP_SECRET={sp_secret} --all-traffic"
+        deployment_cmd = f"az ml online-deployment create --name blue --endpoint {online_endpoint_name}  -f deployment/realtime_score.yml --set environment_variables.TENANT_ID={tenant_id} environment_variables.TABLE_NAME=IRIS_MODEL  environment_variables.SUBSCRIPTION_ID={subscription_id} environment_variables.RG={resource_group_name} environment_variables.WS_NAME={ws_name} environment_variables.SP_ID={sp_id} environment_variables.SP_SECRET={sp_secret} --all-traffic"
         subprocess.check_output(deployment_cmd,shell=True)
         print("deployment is done")
 
