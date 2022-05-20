@@ -5,7 +5,7 @@ import json
 import joblib
 from azureml.core.authentication import ServicePrincipalAuthentication
 from azureml.core import Workspace
-from monitoring.data_collector import Online_Collector
+from aml_obs.collector import Online_Collector
 import datetime
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
