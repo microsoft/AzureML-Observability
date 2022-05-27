@@ -43,10 +43,10 @@ To install early release version:
 
 1. For Data Collection to ingest data:
 
-    ```pip install git+https://github.com/microsoft/AzureML-Observability#subdirectory=aml-obs-collector```  
+    ```pip install --upgrade git+https://github.com/microsoft/AzureML-Observability#subdirectory=aml-obs-collector```  
 2. For client library: 
 
-    ```pip install git+https://github.com/microsoft/AzureML-Observability#subdirectory=aml-obs-client```
+    ```pip install --upgrade git+https://github.com/microsoft/AzureML-Observability#subdirectory=aml-obs-client```
 
     ```pip install azure-ai-ml==0.0.62653692 --extra-index-url https://azuremlsdktestpypi.azureedge.net/sdk-cli-v2```
 
