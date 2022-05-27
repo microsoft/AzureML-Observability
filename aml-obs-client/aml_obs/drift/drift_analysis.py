@@ -307,7 +307,7 @@ let categorical_features = dynamic([{cat_feature_list_with_quote}]);
     project categorical_feature, categorical_feature_value = tostring(properties[categorical_feature])
 )
 |summarize count = count() by categorical_feature, categorical_feature_value, bin(['{time_stamp_col}'],{bin})
-|summarize value_list= tostring(make_list(categorical_feature_value)), count_list = make_list(['count']) by ['timestamp'],feature =categorical_feature
+|summarize value_list= tostring(make_list(categorical_feature_value)), count_list = make_list(['count']) by ['{time_stamp_col}'],feature =categorical_feature
 """
         # print(query)
         return self.query(query)
