@@ -1,6 +1,6 @@
 from azure.kusto.data import KustoClient, KustoConnectionStringBuilder,ClientRequestProperties
 from azure.kusto.data.helpers import dataframe_from_result_table
-from aml_obs import KV_SP_ID, KV_SP_KEY, KV_ADX_DB, KV_ADX_URI, KV_TENANT_ID
+from obs import KV_SP_ID, KV_SP_KEY, KV_ADX_DB, KV_ADX_URI, KV_TENANT_ID
 import concurrent.futures
 from datetime import timedelta
 import pandas as pd

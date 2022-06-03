@@ -1,5 +1,5 @@
 from azure.kusto.data import KustoClient, KustoConnectionStringBuilder,ClientRequestProperties
-from aml_obs import KV_SP_ID, KV_SP_KEY, KV_ADX_DB, KV_ADX_URI, KV_TENANT_ID
+from obs import KV_SP_ID, KV_SP_KEY, KV_ADX_DB, KV_ADX_URI, KV_TENANT_ID
 from azure.kusto.data.helpers import dataframe_from_result_table
 import plotly.graph_objects as go
 from azure.kusto.ingest import (
