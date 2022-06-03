@@ -6,7 +6,7 @@ from dateutil import parser
 import plotly.express as px
 from dash import Dash, dcc, html, Input, Output, State
 import plotly.graph_objects as go
-from .drift_analysis import Drift_Analysis
+from .core import Drift_Analysis
 def launch_dashboard(drift_analysis:Drift_Analysis):
     external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
