@@ -1,6 +1,6 @@
 import random
 import subprocess
-from aml_obs import KV_SP_ID, KV_SP_KEY
+from obs import KV_SP_ID, KV_SP_KEY
 import urllib.request
 import json
 import pandas as pd
