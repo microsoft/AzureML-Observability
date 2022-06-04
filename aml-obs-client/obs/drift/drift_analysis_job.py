@@ -23,7 +23,7 @@ import os
 os.environ["AZURE_ML_CLI_PRIVATE_FEATURES_ENABLED"] = "true"
 
 def execute_drift_detect_job(subscription_id,resource_group,workspace, compute_name, base_table_name, 
-target_table_name, base_dt_from ,base_dt_to,target_dt_from, target_dt_to,user_defined_module_file=None, user_defined_conda_file=None,cron_schedule=None, experiment_name= "drift-analysis-job", bin="1d", limit=100000):
+target_table_name, base_dt_from ,base_dt_to,target_dt_from, target_dt_to,user_defined_module_file=None, user_defined_conda_file=None,cron_schedule=None, experiment_name= "drift-analysis-job", bin="1d", limit=100000, concurrent_run=False):
     ml_client = MLClient(
         DefaultAzureCredential(), subscription_id, resource_group, workspace
     )
@@ -66,7 +66,7 @@ target_table_name, base_dt_from ,base_dt_to,target_dt_from, target_dt_to,user_de
         with open(".tmp/drift_analysis.py", "w") as drift_analysis_file:
             drift_analysis_file.write(content)
 
-    source_file_content="""
+    source_file_content=f"""
     import sys
     import os
     sys.path.append(os.path.join(os.path.dirname(__file__),'../'))
@@ -103,7 +103,7 @@ target_table_name, base_dt_from ,base_dt_to,target_dt_from, target_dt_to,user_de
         run_id = args.base_table_name+"_"+args.target_table_name+"_"+ str(ts)
         drift_analysis =Drift_Analysis_User()
 
-        df_output = drift_analysis.analyze_drift(limit=args.limit,base_table_name = args.base_table_name,target_table_name=args.target_table_name, base_dt_from=args.base_dt_from, base_dt_to=args.base_dt_to, target_dt_from=args.target_dt_from, target_dt_to=args.target_dt_to, bin=args.bin)
+        df_output = drift_analysis.analyze_drift(limit=args.limit,base_table_name = args.base_table_name,target_table_name=args.target_table_name, base_dt_from=args.base_dt_from, base_dt_to=args.base_dt_to, target_dt_from=args.target_dt_from, target_dt_to=args.target_dt_to, bin=args.bin, concurrent_run={concurrent_run})
         df_output['run_id'] = run_id
         output['base_start_date']=pd.to_datetime(args.base_dt_from)
         output['base_end_date']=pd.to_datetime(args.base_dt_to)
