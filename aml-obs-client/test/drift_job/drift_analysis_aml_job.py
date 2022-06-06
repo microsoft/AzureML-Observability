@@ -36,7 +36,9 @@ def main(args):
     run_id = args.base_table_name+"_"+args.target_table_name+"_"+ str(ts)
     drift_analysis =Drift_Analysis_User()
 
-    df_output = drift_analysis.analyze_drift(limit=args.limit,base_table_name = args.base_table_name,target_table_name=args.target_table_name, base_dt_from=args.base_dt_from, base_dt_to=args.base_dt_to, target_dt_from=args.target_dt_from, target_dt_to=args.target_dt_to, bin=args.bin, concurrent_run=args.concurrent_run, drift_threshold=args.drift_threshold)
+    df_output, drift_result = drift_analysis.analyze_drift(limit=args.limit,base_table_name = args.base_table_name,target_table_name=args.target_table_name, base_dt_from=args.base_dt_from, base_dt_to=args.base_dt_to, target_dt_from=args.target_dt_from, target_dt_to=args.target_dt_to, bin=args.bin, concurrent_run=args.concurrent_run, drift_threshold=args.drift_threshold)
+    print(drift_result)
+
     df_output['run_id'] = run_id
     df_output['base_start_date']=pd.to_datetime(args.base_dt_from)
     df_output['base_end_date']=pd.to_datetime(args.base_dt_to)
