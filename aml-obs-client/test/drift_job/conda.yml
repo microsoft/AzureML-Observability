@@ -10,6 +10,7 @@
       - azure-mgmt-kusto==2.2.0
       - azure-kusto-data==3.1.2
       - azure-kusto-ingest==3.1.2
+      - scikit-learn==1.1.1
       - azureml-defaults==1.41.0
       - pandas
       - --extra-index-url https://azuremlsdktestpypi.azureedge.net/sdk-cli-v2

@@ -1,10 +1,11 @@
 import concurrent.futures
 import pandas as pd
-
+from sklearn.preprocessing import MinMaxScaler
+import numpy as np
 from obs.drift.core import Drift_Analysis
 
 class Drift_Analysis_User(Drift_Analysis):
-    def analyze_drift(self,base_table_name,target_table_name, base_dt_from, base_dt_to, target_dt_from, target_dt_to, bin, limit=None, concurrent_run=True):
+    def analyze_drift(self,base_table_name,target_table_name, base_dt_from, base_dt_to, target_dt_from, target_dt_to, bin, limit=None, concurrent_run=True, drift_threshold =0.5):
         if limit is None:
             limit = ""
         else:
@@ -31,10 +32,15 @@ class Drift_Analysis_User(Drift_Analysis):
         else:
             categorical_output =self.analyze_drift_categorical(categorical_columns, time_stamp_col, base_table_name,target_table_name, base_dt_from, base_dt_to, target_dt_from, target_dt_to,bin, limit)
             numberical_output = self.analyze_drift_numerical(numerical_columns, time_stamp_col, base_table_name,target_table_name, base_dt_from, base_dt_to, target_dt_from, target_dt_to, bin, limit)
-
-
+        scaler = MinMaxScaler()
+        categorical_output.sort_values(['categorical_feature', 'target_start_date'], inplace=True)
+        categorical_output['scaled_metric']= categorical_output.groupby(['categorical_feature']).apply(lambda x:scaler.fit_transform(np.array(x.euclidean.values).reshape(-1,1)).flatten()).explode().values
+        numberical_output.sort_values(['numeric_feature', 'target_start_date'], inplace=True)
+        numberical_output['scaled_metric']= numberical_output.groupby(['numeric_feature']).apply(lambda x:scaler.fit_transform(np.array(x.wasserstein.values).reshape(-1,1)).flatten()).explode().values
         output = pd.concat([categorical_output, numberical_output])
-        return output
+        drift_result = output.groupby("target_start_date")['scaled_metric'].mean()>drift_threshold
+
+        return output,drift_result
     def analyze_drift_v2(self,base_table_name,target_table_name, base_dt_from, base_dt_to, target_dt_from, target_dt_to, bin, limit=None, concurrent_run=True):
         if limit is None:
             limit = ""
@@ -117,14 +123,13 @@ let target =
 //
 typeof(*, euclidean:double),               //  Output schema: append a new fx column to original table 
 ```
-#from scipy.special import kl_div
 from scipy.spatial import distance
 from sklearn import preprocessing
 import random
 import numpy as np
 result = df
 n = df.shape[0]
-distance2 =[]
+euc_distance =[]
 le = preprocessing.LabelEncoder()
 
 for i in range(n):
@@ -137,8 +142,8 @@ for i in range(n):
         base_features = random.sample(base_features, len(target_features))
     base_features.sort()
     target_features.sort()
-    distance2.append(distance.euclidean(le.transform(base_features), le.transform(target_features)))
-result['euclidean'] =distance2
+    euc_distance.append(distance.euclidean(le.transform(base_features), le.transform(target_features)))
+result['euclidean'] =euc_distance
 
 ```
 )

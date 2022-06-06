@@ -24,7 +24,7 @@ os.environ["AZURE_ML_CLI_PRIVATE_FEATURES_ENABLED"] = "true"
 
 def execute(subscription_id,resource_group,workspace, compute_name, base_table_name, 
 target_table_name, base_dt_from ,base_dt_to,target_dt_from, target_dt_to,user_defined_module_file=None, 
-user_defined_conda_file=None,drift_analysis_job_file=None,cron_schedule=None, experiment_name= "drift-analysis-job", bin="1d", limit=100000, concurrent_run=True):
+user_defined_conda_file=None,drift_analysis_job_file=None,cron_schedule=None, experiment_name= "drift-analysis-job", bin="1d", limit=100000, concurrent_run=True, drift_threshold=0.5):
     ml_client = MLClient(
         DefaultAzureCredential(), subscription_id, resource_group, workspace
     )
@@ -91,6 +91,7 @@ def parse_args():
     parser.add_argument("--drift_result_table", type=str, default="data_drift_result")
     parser.add_argument("--feature_distribution_table", type=str, default="feature_distribution")
     parser.add_argument("--concurrent_run", type=bool, default=False)
+    parser.add_argument("--drift_threshold", type=float, default=0.5)
 
 
     # parse args
@@ -104,7 +105,7 @@ def main(args):
     run_id = args.base_table_name+"_"+args.target_table_name+"_"+ str(ts)
     drift_analysis =Drift_Analysis_User()
 
-    df_output = drift_analysis.analyze_drift(limit=args.limit,base_table_name = args.base_table_name,target_table_name=args.target_table_name, base_dt_from=args.base_dt_from, base_dt_to=args.base_dt_to, target_dt_from=args.target_dt_from, target_dt_to=args.target_dt_to, bin=args.bin, concurrent_run=args.concurrent_run)
+    df_output = drift_analysis.analyze_drift(limit=args.limit,base_table_name = args.base_table_name,target_table_name=args.target_table_name, base_dt_from=args.base_dt_from, base_dt_to=args.base_dt_to, target_dt_from=args.target_dt_from, target_dt_to=args.target_dt_to, bin=args.bin, concurrent_run=args.concurrent_run, drift_threshold = args.drift_threshold)
     df_output['run_id'] = run_id
     df_output['base_start_date']=pd.to_datetime(args.base_dt_from)
     df_output['base_end_date']=pd.to_datetime(args.base_dt_to)
@@ -136,7 +137,7 @@ if __name__ == "__main__":
     job = command(
     code=".tmp",  # local path where the code is stored
     command="python job_file.py --base_table_name ${{inputs.base_table_name}} --target_table_name ${{inputs.target_table_name}} --base_dt_from ${{inputs.base_dt_from}} --base_dt_to ${{inputs.base_dt_to}} --target_dt_from ${{inputs.target_dt_from}} --target_dt_to ${{inputs.target_dt_to}} --bin ${{inputs.bin}} --limit ${{inputs.limit}}",
-    inputs={"base_table_name": base_table_name, "target_table_name": target_table_name, "base_dt_from":base_dt_from, "base_dt_to": base_dt_to,"target_dt_from": target_dt_from, "target_dt_to":target_dt_to, "bin":bin, "limit":limit, "concurrent_run":concurrent_run},
+    inputs={"base_table_name": base_table_name, "target_table_name": target_table_name, "base_dt_from":base_dt_from, "base_dt_to": base_dt_to,"target_dt_from": target_dt_from, "target_dt_to":target_dt_to, "bin":bin, "limit":limit, "concurrent_run":concurrent_run,  "drift_threshold":drift_threshold},
     environment=env_docker_conda,
     compute=compute_name,
     display_name=experiment_name    # description,
