@@ -9,6 +9,37 @@ class Drift_Analysis_User(Drift_Analysis):
             limit = ""
         else:
             limit = f"| limit {limit}"
+        base_tbl_columns = self.list_table_columns(base_table_name)
+        target_tbl_columns = self.list_table_columns(target_table_name)
+        common_columns = base_tbl_columns.merge(target_tbl_columns)
+        timestamp_cols = common_columns[common_columns['AttributeType']=='DateTime']
+        if timestamp_cols.shape[0]==0:
+            raise Exception("No timestamp column found! ")
+        if "timestamp" in timestamp_cols['AttributeName'].values:
+            time_stamp_col ='timestamp'
+        else:
+            time_stamp_col = timestamp_cols['AttributeName'].values[0]
+        numerical_columns = common_columns[(common_columns['AttributeType']!='DateTime')&(common_columns['AttributeType']!='StringBuffer')]
+        numerical_columns = numerical_columns['AttributeName'].values
+        categorical_columns = common_columns[common_columns['AttributeType']=='StringBuffer']['AttributeName'].values
+        if concurrent_run:
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                categorical_output_future = executor.submit(self.analyze_drift_categorical, categorical_columns, time_stamp_col, base_table_name,target_table_name, base_dt_from, base_dt_to, target_dt_from, target_dt_to,bin, limit)
+                numberical_output_future = executor.submit(self.analyze_drift_numerical,numerical_columns, time_stamp_col, base_table_name,target_table_name, base_dt_from, base_dt_to, target_dt_from, target_dt_to, bin, limit)
+                categorical_output = categorical_output_future.result()
+                numberical_output = numberical_output_future.result()
+        else:
+            categorical_output =self.analyze_drift_categorical(categorical_columns, time_stamp_col, base_table_name,target_table_name, base_dt_from, base_dt_to, target_dt_from, target_dt_to,bin, limit)
+            numberical_output = self.analyze_drift_numerical(numerical_columns, time_stamp_col, base_table_name,target_table_name, base_dt_from, base_dt_to, target_dt_from, target_dt_to, bin, limit)
+
+
+        output = pd.concat([categorical_output, numberical_output])
+        return output
+    def analyze_drift_v2(self,base_table_name,target_table_name, base_dt_from, base_dt_to, target_dt_from, target_dt_to, bin, limit=None, concurrent_run=True):
+        if limit is None:
+            limit = ""
+        else:
+            limit = f"| limit {limit}"
 
         base_tbl_columns = self.list_table_columns(base_table_name)
         target_tbl_columns = self.list_table_columns(target_table_name)
