@@ -7,7 +7,8 @@ import plotly.express as px
 from dash import Dash, dcc, html, Input, Output, State
 import plotly.graph_objects as go
 from .core import Drift_Analysis
-def launch_dashboard(drift_analysis:Drift_Analysis):
+from drift_analysis_kusto import Drift_Analysis_User
+def launch_dashboard(drift_analysis:Drift_Analysis_User):
     external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
     app = JupyterDash(__name__, external_stylesheets=external_stylesheets)

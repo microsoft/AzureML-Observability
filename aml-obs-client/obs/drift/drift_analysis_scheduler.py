@@ -45,6 +45,7 @@ user_defined_conda_file=None,drift_analysis_job_file=None,cron_schedule=None, ex
             - azure-kusto-data==3.1.2
             - azure-kusto-ingest==3.1.2
             - dash==2.3.1
+            - scikit-learn==1.1.1
             - plotly==5.7.0
             - azureml-defaults==1.41.0
             - pandas
