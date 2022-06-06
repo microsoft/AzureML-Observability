@@ -60,12 +60,15 @@ To install early release version:
 [2. Monitoring](./quick_start/1_monitoring.ipynb)
 
     This notebook will help you to understand how to collect data. To monitor metrics, you need to import ADX dashboard template to ADX that you created from the previous notebook _1. Solution provisioning_
-    ![Model Monitoring Dashboard](./media/model_monitoring_dashboard.png)
+
+![Model Monitoring Dashboard](./media/model_monitoring_dashboard.png)
 
 
 [3. Drift](./quick_start/2_drift.ipynb)
 
     This notebook will help you to understand how to run data drift detection job
+![Drift Analysis Dashboard](./media/drift_detection_dashboard.png)
+
 
 ## Contributing
 
