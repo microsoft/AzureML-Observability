@@ -63,6 +63,7 @@ def create_adx_cluster(resource_group_name, cluster_name,location,sku_name,capac
 def create_service_principal(sp_name, subscription_id, resource_group_name, keyvault=None):
     cmd = f"az ad sp create-for-rbac --name {sp_name} --role contributor --scopes /subscriptions/{subscription_id}/resourceGroups/{resource_group_name} --sdk-auth"
     result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
+    print(result)
     result = json.loads(result.stdout.decode('utf-8'))
     if keyvault:
         keyvault.set_secret(name=KV_SP_ID, value = result['clientId'])
