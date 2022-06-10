@@ -16,7 +16,7 @@ from datetime import timedelta
 
 import random
 def create_adx_cluster(resource_group_name, cluster_name,location,sku_name,capacity,tier,credentials,subscription_id,database_name,principal_id,tenantId ):
-    print(f"begin creating ADX cluster {cluster_name} at {location} with {sku_name} and capacity {capacity}")
+    print(f"Begin creating ADX cluster {cluster_name} at {location} with {sku_name} and capacity {capacity}")
 
     cluster = Cluster(location=location, sku=AzureSku(name=sku_name, capacity=capacity, tier=tier),enable_streaming_ingest=True, )
 
@@ -27,7 +27,7 @@ def create_adx_cluster(resource_group_name, cluster_name,location,sku_name,capac
     poller = cluster_operations.begin_create_or_update(resource_group_name, cluster_name, cluster)
     poller.wait()
     print(f"finished creating cluster {cluster_name}")
-    print(f"Beging enabling Python for {cluster_name}")
+    print(f"Begin enabling Python for {cluster_name}")
 
     poller = cluster_operations.begin_add_language_extensions(resource_group_name, cluster_name, LanguageExtensionsList(value=[LanguageExtension(language_extension_name="PYTHON")]))
     poller.wait()
@@ -36,7 +36,7 @@ def create_adx_cluster(resource_group_name, cluster_name,location,sku_name,capac
     soft_delete_period = timedelta(days=3650)
     hot_cache_period = timedelta(days=3650)
 
-    print(f"begin creating DB {database_name} for cluster {cluster_name}")
+    print(f"Begin creating DB {database_name} for cluster {cluster_name}")
 
     database_operations = kusto_management_client.databases
     database = ReadWriteDatabase(location=location,
@@ -45,7 +45,7 @@ def create_adx_cluster(resource_group_name, cluster_name,location,sku_name,capac
 
     poller = database_operations.begin_create_or_update(resource_group_name = resource_group_name, cluster_name = cluster_name, database_name = database_name, parameters = database)
     poller.wait()
-    print(f"finished creating database")
+    print(f"Finished creating database")
     principal_assignment_name = "clusterPrincipalAssignment1"
     #User email, application ID, or security group name
     #AllDatabasesAdmin, AllDatabasesMonitor or AllDatabasesViewer
@@ -58,7 +58,7 @@ def create_adx_cluster(resource_group_name, cluster_name,location,sku_name,capac
         poller = kusto_management_client.database_principal_assignments.begin_create_or_update(resource_group_name=resource_group_name, cluster_name=cluster_name, database_name=database_name, principal_assignment_name= principal_assignment_name, parameters=DatabasePrincipalAssignment(principal_id=principal_id, role=role, tenant_id=tenant_id_for_principal, principal_type=principal_type))
     except: #handling an error that is not understood. The assignment is still successful.
         pass
-    print(f"finished assigning SP to database")
+    print(f"Finished assigning SP to database")
 
 def create_service_principal(sp_name, subscription_id, resource_group_name, keyvault=None):
     cmd = f"az ad sp create-for-rbac --name {sp_name} --role contributor --scopes /subscriptions/{subscription_id}/resourceGroups/{resource_group_name} --sdk-auth"
@@ -73,7 +73,7 @@ def create_service_principal(sp_name, subscription_id, resource_group_name, keyv
 
 def azlogin(tenant_id):
     cmd = f"az login --tenant {tenant_id}"
-    print("if the login screen does not pop-up, please copy and run the following command to login")
+    print("if the login screen does not pop up, please copy and run the following command to login")
     print(cmd)
     result = subprocess.run(cmd, shell=True, stdout=subprocess.PIPE)
 
