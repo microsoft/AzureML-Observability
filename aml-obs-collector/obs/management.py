@@ -46,19 +46,19 @@ def create_adx_cluster(resource_group_name, cluster_name,location,sku_name,capac
     poller = database_operations.begin_create_or_update(resource_group_name = resource_group_name, cluster_name = cluster_name, database_name = database_name, parameters = database)
     poller.wait()
     print(f"finished creating database")
-    # principal_assignment_name = "clusterPrincipalAssignment1"
-    # #User email, application ID, or security group name
-    # #AllDatabasesAdmin, AllDatabasesMonitor or AllDatabasesViewer
-    # role = "Admin"
-    # tenant_id_for_principal = tenantId
-    # #User, App, or Group
-    # principal_type = "App"
-    #Returns an instance of LROPoller, check https://docs.microsoft.com/python/api/msrest/msrest.polling.lropoller?view=azure-python
-    # try:
-    #     poller = kusto_management_client.database_principal_assignments.begin_create_or_update(resource_group_name=resource_group_name, cluster_name=cluster_name, database_name=database_name, principal_assignment_name= principal_assignment_name, parameters=DatabasePrincipalAssignment(principal_id=principal_id, role=role, tenant_id=tenant_id_for_principal, principal_type=principal_type))
-    # except: #handling an error that is not understood. The assignment is still successful.
-    #     pass
-    # print(f"finished assigning SP to database")
+    principal_assignment_name = "clusterPrincipalAssignment1"
+    #User email, application ID, or security group name
+    #AllDatabasesAdmin, AllDatabasesMonitor or AllDatabasesViewer
+    role = "Admin"
+    tenant_id_for_principal = tenantId
+    #User, App, or Group
+    principal_type = "App"
+    # Returns an instance of LROPoller, check https://docs.microsoft.com/python/api/msrest/msrest.polling.lropoller?view=azure-python
+    try:
+        poller = kusto_management_client.database_principal_assignments.begin_create_or_update(resource_group_name=resource_group_name, cluster_name=cluster_name, database_name=database_name, principal_assignment_name= principal_assignment_name, parameters=DatabasePrincipalAssignment(principal_id=principal_id, role=role, tenant_id=tenant_id_for_principal, principal_type=principal_type))
+    except: #handling an error that is not understood. The assignment is still successful.
+        pass
+    print(f"finished assigning SP to database")
 
 def create_service_principal(sp_name, subscription_id, resource_group_name, keyvault=None):
     cmd = f"az ad sp create-for-rbac --name {sp_name} --role contributor --scopes /subscriptions/{subscription_id}/resourceGroups/{resource_group_name} --sdk-auth"
@@ -81,8 +81,17 @@ def azlogin(tenant_id):
 
 
 
-def provision(ws=None, tenant_id =None, location=None, client_id = None, client_secret=None, subscription_id=None,resource_group_name=None,cluster_name=None, database_name ="mlmonitoring",sku_name = 'Dev(No SLA)_Standard_D11_v2', tier = "Basic",capacity = 1):
+def provision(ws=None, tenant_id =None, location=None, client_id = None, client_secret=None, subscription_id=None,resource_group_name=None,cluster_name=None, database_name ="mlmonitoring",sku_name = 'Standard_D11_v2', tier = "Standard",capacity = 2):
     
+
+    """This method create service principal, setup ADX cluster and store credentials in the Azure ML's default keyvault.
+ 
+    Input Arguments: ws=None, tenant_id =None, location=None, client_id = None, client_secret=None, subscription_id=None,resource_group_name=None,cluster_name=None, database_name ="mlmonitoring",sku_name = 'Dev(No SLA)_Standard_D11_v2', tier = "Basic",capacity = 1
+    SKU name. Possible values include: "Dev(No SLA)_Standard_D11_v2", "Dev(No SLA)_Standard_E2a_v4", "Standard_D11_v2", "Standard_D12_v2", "Standard_D13_v2", "Standard_D14_v2", "Standard_D32d_v4", "Standard_D16d_v5", "Standard_D32d_v5", "Standard_DS13_v2+1TB_PS", "Standard_DS13_v2+2TB_PS", "Standard_DS14_v2+3TB_PS", "Standard_DS14_v2+4TB_PS", "Standard_L4s", "Standard_L8s", "Standard_L16s", "Standard_L8s_v2", "Standard_L16s_v2", "Standard_E64i_v3", "Standard_E80ids_v4", "Standard_E2a_v4", "Standard_E4a_v4", "Standard_E8a_v4", "Standard_E16a_v4", "Standard_E8as_v4+1TB_PS", "Standard_E8as_v4+2TB_PS", "Standard_E16as_v4+3TB_PS", "Standard_E16as_v4+4TB_PS", "Standard_E8as_v5+1TB_PS", "Standard_E8as_v5+2TB_PS", "Standard_E16as_v5+3TB_PS", "Standard_E16as_v5+4TB_PS", "Standard_E2ads_v5", "Standard_E4ads_v5", "Standard_E8ads_v5", "Standard_E16ads_v5", "Standard_E8s_v4+1TB_PS", "Standard_E8s_v4+2TB_PS", "Standard_E16s_v4+3TB_PS", "Standard_E16s_v4+4TB_PS", "Standard_E8s_v5+1TB_PS", "Standard_E8s_v5+2TB_PS", "Standard_E16s_v5+3TB_PS", "Standard_E16s_v5+4TB_PS".
+    SKU tier. Possible values include: "Basic", "Standard".
+
+
+    """    
     
 
     kv =None
