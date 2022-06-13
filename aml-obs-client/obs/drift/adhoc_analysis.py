@@ -6,9 +6,8 @@ from dateutil import parser
 import plotly.express as px
 from dash import Dash, dcc, html, Input, Output, State
 import plotly.graph_objects as go
-from .core import Drift_Analysis
 from .drift_analysis_kusto import Drift_Analysis_User
-def launch_dashboard(drift_analysis:Drift_Analysis_User):
+def launch_dashboard(drift_analysis:Drift_Analysis_User,port_num=8050):
     external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
     app = JupyterDash(__name__, external_stylesheets=external_stylesheets)
@@ -62,6 +61,16 @@ def launch_dashboard(drift_analysis:Drift_Analysis_User):
                     )
                 ],
                     style={'padding': 30, 'flex': 1}
+                ),
+
+                html.Div([
+                    html.Label("Bin"),
+                    dcc.Dropdown(
+                        ['1d','7d','14d', '30d'],
+                        '7d',
+                        id='bin',
+                    )                ], 
+                    style={'padding': 40, 'flex': 1}
                 ),
                 html.Div([
                     html.Button('Prepare data', 
@@ -196,6 +205,7 @@ def launch_dashboard(drift_analysis:Drift_Analysis_User):
         State('trgt_tables', 'value'),
         State('target_timeline', 'start_date'),
         State('target_timeline', 'end_date'), 
+        # Input('bin', 'bin'), 
         Input('prepare_data', 'n_clicks'),
             prevent_initial_call=True
 
@@ -203,8 +213,9 @@ def launch_dashboard(drift_analysis:Drift_Analysis_User):
         )
     def calculate(table_name, base_start_date, base_end_date,target_table_name,target_start_date, target_end_date,n_clicks):
                 # self,base_table_name,target_table_name, base_dt_from, base_dt_to, target_dt_from, target_dt_to, bin, limit=10000000, concurrent_run=True)
-        query_df = drift_analysis.analyze_drift(limit=100000,base_table_name = f'{table_name}', target_table_name=f'{target_table_name}', base_dt_from=f'{base_start_date}', base_dt_to=f'{base_end_date}', target_dt_from=f'{target_start_date}', target_dt_to=f'{target_end_date}', bin='30d')
-        return query_df.to_json(date_format='iso', orient='split')
+        output,drift_result = drift_analysis.analyze_drift(limit=100000,base_table_name = f'{table_name}', target_table_name=f'{target_table_name}', base_dt_from=f'{base_start_date}', base_dt_to=f'{base_end_date}', target_dt_from=f'{target_start_date}', target_dt_to=f'{target_end_date}', bin='7d')
+        
+        return output.to_json(date_format='iso', orient='split')
 
     @app.callback(
         Output('overview_graph', 'figure'),
@@ -217,8 +228,7 @@ def launch_dashboard(drift_analysis:Drift_Analysis_User):
         if jsonified_cleaned_data is not None:
             dff = pd.read_json(jsonified_cleaned_data, orient='split')
             dff.sort_values("target_start_date", inplace=True)
-            dff["feature_drift"] = np.where(pd.isna(dff["euclidean"]), dff["wasserstein"]/(dff["target_mean"]+1), dff["euclidean"]/(dff["target_dcount"]+1))
-            avgs = dff.groupby("target_start_date")["feature_drift"].mean()
+            avgs = dff.groupby("target_start_date")["scaled_metric"].mean()
             # x_values = list(avgs.index.strftime("%m/%d/%Y"))
             x_values = list(avgs.index)
             y_values = list(avgs.values)
@@ -294,9 +304,9 @@ def launch_dashboard(drift_analysis:Drift_Analysis_User):
         if jsonified_cleaned_data is not None:
             dff = pd.read_json(jsonified_cleaned_data, orient='split')
             dff.sort_values("target_start_date", inplace=True)
-            dff["feature_drift"] = np.where(pd.isna(dff["euclidean"]), dff["wasserstein"]/(dff["target_mean"]+1), dff["euclidean"]/(dff["target_dcount"]+1))
             dff["feature_name"] = np.where(pd.isna(dff["euclidean"]), dff["numeric_feature"], dff["categorical_feature"])
-            fig = px.bar(dff, x="target_start_date", y="feature_drift", color="feature_name")    
+
+            fig = px.bar(dff, x="target_start_date", y="scaled_metric", color="feature_name")    
         else:
             fig = go.Figure(data=[go.Histogram(x=[0] )])
         fig.update_layout(title_text="Data Drift by Feature", title_x=0.5)
@@ -304,4 +314,4 @@ def launch_dashboard(drift_analysis:Drift_Analysis_User):
 
 
 
-    app.run_server()
+    app.run_server(port = port_num)
