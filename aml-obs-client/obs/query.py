@@ -2,6 +2,7 @@ from azure.kusto.data import KustoClient, KustoConnectionStringBuilder,ClientReq
 from obs import KV_SP_ID, KV_SP_KEY, KV_ADX_DB, KV_ADX_URI, KV_TENANT_ID
 from azure.kusto.data.helpers import dataframe_from_result_table
 import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 from azure.kusto.ingest import (
     QueuedIngestClient
 )
@@ -107,7 +108,7 @@ class RT_Visualization(KustoQuery):
             groupby_items = np.unique(data[groupby])
 
             # Create the graph with subplots
-            fig = plotly.subplots.make_subplots(rows=1, cols=1, vertical_spacing=0.2)
+            fig = make_subplots(rows=1, cols=1, vertical_spacing=0.2)
             fig['layout']['margin'] = {
                 'l': 30, 'r': 10, 'b': 30, 't': 10
             }
