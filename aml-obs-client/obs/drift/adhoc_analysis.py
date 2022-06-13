@@ -205,15 +205,14 @@ def launch_dashboard(drift_analysis:Drift_Analysis_User,port_num=8050):
         State('trgt_tables', 'value'),
         State('target_timeline', 'start_date'),
         State('target_timeline', 'end_date'), 
-        # Input('bin', 'bin'), 
+        State('bin', 'value'), 
         Input('prepare_data', 'n_clicks'),
             prevent_initial_call=True
 
         
         )
-    def calculate(table_name, base_start_date, base_end_date,target_table_name,target_start_date, target_end_date,n_clicks):
-                # self,base_table_name,target_table_name, base_dt_from, base_dt_to, target_dt_from, target_dt_to, bin, limit=10000000, concurrent_run=True)
-        output,drift_result = drift_analysis.analyze_drift(limit=100000,base_table_name = f'{table_name}', target_table_name=f'{target_table_name}', base_dt_from=f'{base_start_date}', base_dt_to=f'{base_end_date}', target_dt_from=f'{target_start_date}', target_dt_to=f'{target_end_date}', bin='7d')
+    def calculate(table_name, base_start_date, base_end_date,target_table_name,target_start_date, target_end_date,bin, n_clicks):
+        output,drift_result = drift_analysis.analyze_drift(limit=10000000,base_table_name = f'{table_name}', target_table_name=f'{target_table_name}', base_dt_from=f'{base_start_date}', base_dt_to=f'{base_end_date}', target_dt_from=f'{target_start_date}', target_dt_to=f'{target_end_date}', bin=f'{bin}')
         
         return output.to_json(date_format='iso', orient='split')
 
@@ -305,7 +304,6 @@ def launch_dashboard(drift_analysis:Drift_Analysis_User,port_num=8050):
             dff = pd.read_json(jsonified_cleaned_data, orient='split')
             dff.sort_values("target_start_date", inplace=True)
             dff["feature_name"] = np.where(pd.isna(dff["euclidean"]), dff["numeric_feature"], dff["categorical_feature"])
-
             fig = px.bar(dff, x="target_start_date", y="scaled_metric", color="feature_name")    
         else:
             fig = go.Figure(data=[go.Histogram(x=[0] )])
