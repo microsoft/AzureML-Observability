@@ -36,7 +36,7 @@ class KustoQuery():
         self.client_req_properties.set_option(self.client_req_properties.no_request_timeout_option_name , True)
 
     def query(self, query):
-        response = self.client.execute(self.database_name, query, self.client_req_properties)
+        response = self.kusto_client.execute(self.database_name, query, self.client_req_properties)
         dataframe = dataframe_from_result_table(response.primary_results[0])
         return dataframe
     def retrieve_last_records(self,ts_col_name = "timestamp", max_records = 1000, ago ='5m', metric=None, agg=None, bin=None, groupby=None):
