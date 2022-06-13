@@ -19,18 +19,23 @@ def deploy_model(ws, online_endpoint_name=None,create_endpoint=True, install_cli
     if install_cli_v2:
         library_install_cmd = f"""
         az extension add -n ml -y --version 2.3.1
-        az configure --defaults group={resource_group_name} workspace={ws_name} location={location}   
         """
         print("Install ML CLI v2")
         
         subprocess.check_output(library_install_cmd, shell=True)
-
+    set_default_cmd = f"""
+    az account set -s {subscription_id}
+    az configure --defaults group={resource_group_name} workspace={ws_name} location={location}   
+    """
+    print("Set default values for  CLI v2", set_default_cmd)
+    subprocess.check_output(set_default_cmd, shell=True)
     
     if online_endpoint_name is None:
         print("Creating managed online endpoint  ")
 
         online_endpoint_name = "iris-ep" + str(random.randint(0,9999))
-        
+        i=0
+
         while True:
             try:
                 print("creating online endpoint with name ", online_endpoint_name)
@@ -38,9 +43,13 @@ def deploy_model(ws, online_endpoint_name=None,create_endpoint=True, install_cli
                 print(online_ep_cmd)
                 subprocess.check_output(online_ep_cmd,shell=True)
                 break
-            except:
+            except Exception as e:
+                print("Exception ", e)
                 print("Online EP creation failed, probably name is not unique, try again with new name")
+                if i>3:
+                    print("failing too many times, abort, please check the error message")
                 online_endpoint_name = "iris-ep" + str(random.randint(0,9999))
+                i+=1
 
     
     else:
