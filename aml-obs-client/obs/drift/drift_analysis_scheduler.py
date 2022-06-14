@@ -71,7 +71,7 @@ user_defined_conda_file=None,drift_analysis_job_file=None,cron_schedule=None, ex
         shutil.copy(drift_analysis_job_file,".tmp/job_file.py")
     else:
         content = """
-from .drift_analysis import Drift_Analysis_User
+from obs.drift.drift_analysis_kusto import Drift_Analysis_User
 from obs.collector import Online_Collector
 import calendar;
 import time;
