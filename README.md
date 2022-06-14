@@ -1,8 +1,9 @@
 # Project Goal
 
 The Azure ML Observability solution accelerator provides libraries for model monitoring and data drift analysis.
-
 ## Overview
+
+Read our official blog post at: https://techcommunity.microsoft.com/t5/ai-machine-learning-blog/azureml-observability-a-scalable-and-extensible-solution-for-ml/ba-p/3474066
 
 __How to trust a deployed model, a model in operation?__ 
 

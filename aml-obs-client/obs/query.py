@@ -79,7 +79,7 @@ class KustoQuery():
 
 
 class RT_Visualization(KustoQuery):
-    def scatter(self, max_records, ago,groupby, y_metric, x_metric='timestamp', agg=None, bin=None):
+    def scatter(self, max_records, ago,groupby, y_metric, x_metric='timestamp', agg=None, bin=None, port_num = 8250):
 
         app = JupyterDash(__name__)
         
@@ -126,5 +126,5 @@ class RT_Visualization(KustoQuery):
             return fig
 
 
-        app.run_server(mode='inline')
+        app.run_server(mode='inline', port = port_num)
 
