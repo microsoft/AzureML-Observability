@@ -115,8 +115,11 @@ def main(args):
     data_drift_collector.batch_collect(df_output)
     feature_distribution = drift_analysis.get_features_distributions(target_table_name=args.target_table_name, target_dt_from=args.target_dt_from, target_dt_to=args.target_dt_to, bin=args.bin)
     feature_distribution['run_id'] = run_id
+    feature_distribution_base = drift_analysis.get_features_distributions(target_table_name=args.base_table_name, target_dt_from=args.base_dt_from, target_dt_to=args.base_dt_to, bin=None)
+    feature_distribution_base['run_id'] = run_id
     feature_ditriction_collector = Online_Collector(args.feature_distribution_table)
     feature_ditriction_collector.batch_collect(feature_distribution)
+    feature_ditriction_collector.batch_collect(feature_distribution_base)
 
 if __name__ == "__main__":
     # parse args

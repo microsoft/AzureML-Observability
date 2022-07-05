@@ -1,6 +1,6 @@
 import sys
 import os
-from drift_analysis_user import Drift_Analysis_User
+from drift_analysis import Drift_Analysis_User
 from obs.collector import Online_Collector
 import calendar;
 import time;
@@ -48,7 +48,9 @@ def main(args):
     feature_distribution['run_id'] = run_id
     feature_ditriction_collector = Online_Collector(args.feature_distribution_table)
     feature_ditriction_collector.batch_collect(feature_distribution)
-
+    feature_distribution_base = drift_analysis.get_features_distributions(target_table_name=args.base_table_name, target_dt_from=args.base_dt_from, target_dt_to=args.base_dt_to, bin=None)
+    feature_distribution_base['run_id'] = run_id
+    feature_ditriction_collector.batch_collect(feature_distribution_base)
 if __name__ == "__main__":
     # parse args
     args = parse_args()

@@ -86,6 +86,8 @@ class Drift_Analysis():
         return self.query(query)
 
     def get_categorical_columns_distribution(self,categorical_columns, time_stamp_col, target_table_name, target_dt_from, target_dt_to, bin):
+        # print("using custom categorical distribution")
+
         cat_feature_list = ""
         cat_feature_list_with_quote =""
         for feature in categorical_columns:
@@ -94,30 +96,57 @@ class Drift_Analysis():
         for feature in categorical_columns:
             cat_feature_list = cat_feature_list+f"['{feature}']"+","
         cat_feature_list = cat_feature_list[:-1]
-        query =f"""
-let categorical_features = dynamic([{cat_feature_list_with_quote}]);
-{target_table_name}
-| where ['{time_stamp_col}'] >= datetime('{target_dt_from}') and ['{time_stamp_col}'] <= datetime('{target_dt_to}') 
-| project ['{time_stamp_col}'], {cat_feature_list}, properties = pack_all()
-| mv-apply categorical_feature = categorical_features to typeof(string) on (
-    project categorical_feature, categorical_feature_value = tostring(properties[categorical_feature])
-)
-|summarize count = count() by categorical_feature, categorical_feature_value, bin(['{time_stamp_col}'],{bin})
-|summarize value_list= tostring(make_list(categorical_feature_value)), count_list = make_list(['count']) by ['{time_stamp_col}'],feature =categorical_feature
-"""
+        if bin:
+            query =f"""
+    let categorical_features = dynamic([{cat_feature_list_with_quote}]);
+    {target_table_name}
+    | where ['{time_stamp_col}'] >= datetime('{target_dt_from}') and ['{time_stamp_col}'] <= datetime('{target_dt_to}') 
+    | project ['{time_stamp_col}'], {cat_feature_list}, properties = pack_all()
+    | mv-apply feature = categorical_features to typeof(string) on (
+        project feature, categorical_feature_value = tostring(properties[feature])
+    )
+    |summarize count = count() by feature, categorical_feature_value, bin(['{time_stamp_col}'],{bin})
+    |summarize value_list= tostring(make_list(categorical_feature_value)), count_list = make_list(['count']) by ['{time_stamp_col}'], feature
+    """
+        else:
+            query =f"""
+    let categorical_features = dynamic([{cat_feature_list_with_quote}]);
+    {target_table_name}
+    | where ['{time_stamp_col}'] >= datetime('{target_dt_from}') and ['{time_stamp_col}'] <= datetime('{target_dt_to}') 
+    | project ['{time_stamp_col}'], {cat_feature_list}, properties = pack_all()
+    | mv-apply feature = categorical_features to typeof(string) on (
+        project feature, categorical_feature_value = tostring(properties[feature])
+    )
+    |summarize count = count() by feature, categorical_feature_value
+    |summarize value_list= tostring(make_list(categorical_feature_value)), count_list = make_list(['count']) by feature| extend ['{time_stamp_col}']= datetime('{target_dt_from}')
+    """
         # print(query)
         return self.query(query)
     
     def get_numerical_column_distribution(self, numerical_column, time_stamp_col,target_table_name, target_dt_from, target_dt_to, bin):
+        # print("using custom numerical distribution")
         numerical_column = f"['{numerical_column}']"
-        query = f"""
-let tbl = {target_table_name}| where ['{time_stamp_col}'] >= datetime('{target_dt_from}') and ['{time_stamp_col}'] <= datetime('{target_dt_to}');
-let bin_range = toscalar(tbl|summarize (max({numerical_column})- min({numerical_column})));
-let num_bin = min_of(bin_range, 50);
-let bin_size_temp = bin_range/num_bin;
-tbl|summarize count = count() by bin({numerical_column},bin_size_temp), bin(['{time_stamp_col}'],{bin})
-| summarize value_list= make_list({numerical_column}), count_list = make_list(['count']) by ['{time_stamp_col}']
-        """
+        if bin:
+            query = f"""
+    let tbl = {target_table_name}| where ['{time_stamp_col}'] >= datetime('{target_dt_from}') and ['{time_stamp_col}'] <= datetime('{target_dt_to}');
+    let bin_range = toscalar(tbl|summarize (max({numerical_column})- min({numerical_column})));
+    let num_bin = min_of(bin_range, 50);
+    let bin_size_temp = bin_range/num_bin;
+    tbl|summarize count = count() by bin({numerical_column},bin_size_temp), bin(['{time_stamp_col}'],{bin})
+    | sort by {numerical_column} asc | project ['count'],round({numerical_column}),['{time_stamp_col}']
+    | summarize value_list= make_list({numerical_column}), count_list = make_list(['count']) by ['{time_stamp_col}']
+            """
+        else: #in case this is to produce distribution for the base then bin is not needed
+
+            query = f"""
+    let tbl = {target_table_name}| where ['{time_stamp_col}'] >= datetime('{target_dt_from}') and ['{time_stamp_col}'] <= datetime('{target_dt_to}');
+    let bin_range = toscalar(tbl|summarize (max({numerical_column})- min({numerical_column})));
+    let num_bin = min_of(bin_range, 50);
+    let bin_size_temp = bin_range/num_bin;
+    tbl|summarize count = count() by bin({numerical_column},bin_size_temp)
+    | sort by {numerical_column} asc | project ['count'],round({numerical_column})
+    | summarize value_list= make_list({numerical_column}), count_list = make_list(['count']), ['{time_stamp_col}']= datetime('{target_dt_from}')
+            """
         # print(query)
 
         return self.query(query)
