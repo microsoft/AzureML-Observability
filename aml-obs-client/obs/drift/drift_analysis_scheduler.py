@@ -89,7 +89,7 @@ def parse_args():
     parser.add_argument("--target_dt_to", type=str)
     parser.add_argument("--bin", type=str, default="7d")
     parser.add_argument("--limit", type=str, default="100000")
-    parser.add_argument("--drift_result_table", type=str, default="data_drift_result")
+    parser.add_argument("--drift_result_table", type=str, default="drift_analysis_result")
     parser.add_argument("--feature_distribution_table", type=str, default="feature_distribution")
     parser.add_argument("--concurrent_run", type=bool, default=False)
     parser.add_argument("--drift_threshold", type=float, default=0.5)
