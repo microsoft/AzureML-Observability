@@ -17,14 +17,13 @@ from azure.ai.ml.entities import (
     RecurrencePattern,
     ScheduleStatus,
 )
-
 # add environment variable to enable private preview feature
 import os
 os.environ["AZURE_ML_CLI_PRIVATE_FEATURES_ENABLED"] = "true"
 
 def execute(subscription_id,resource_group,workspace, compute_name, base_table_name, 
-target_table_name, base_dt_from ,base_dt_to,target_dt_from, target_dt_to,user_defined_module_file=None, 
-user_defined_conda_file=None,drift_analysis_job_file=None,cron_schedule=None, experiment_name= "drift-analysis-job", bin="1d", limit=100000, concurrent_run=True, drift_threshold=0.5, drift_result_table="data_drift_result"):
+target_table_name, base_dt_from ,base_dt_to,target_dt_from, target_dt_to=None, target_dt_shift_step_size=None,user_defined_module_file=None, 
+user_defined_conda_file=None,drift_analysis_job_file=None,job_cron_schedule=None, experiment_name= "drift-analysis-job", bin="1d", limit=100000, concurrent_run=True, drift_threshold=0.5, drift_result_table="data_drift_result"):
     ml_client = MLClient(
         DefaultAzureCredential(), subscription_id, resource_group, workspace
     )
@@ -77,6 +76,7 @@ import calendar;
 import time;
 import argparse
 import pandas as pd
+
 def parse_args():
     # setup arg parser
     parser = argparse.ArgumentParser()
@@ -85,8 +85,9 @@ def parse_args():
     parser.add_argument("--target_table_name", type=str)
     parser.add_argument("--base_dt_from", type=str)
     parser.add_argument("--base_dt_to", type=str)
-    parser.add_argument("--target_dt_from", type=str)
-    parser.add_argument("--target_dt_to", type=str)
+    parser.add_argument("--target_dt_from", type=str) #initial target_dt_from
+    parser.add_argument("--target_dt_to", type=str)  #initial target_dt_to
+    parser.add_argument("--target_dt_shift_step_size", type=str, default="None")
     parser.add_argument("--bin", type=str, default="7d")
     parser.add_argument("--limit", type=str, default="100000")
     parser.add_argument("--drift_result_table", type=str, default="drift_analysis_result")
@@ -94,6 +95,7 @@ def parse_args():
     parser.add_argument("--concurrent_run", type=bool, default=False)
     parser.add_argument("--drift_threshold", type=float, default=0.5)
 
+    #if this is a scheduled run (target_dt_shift_step_size is provided and cron schedule is provided), the job will take last target_dt_to from result table
 
     # parse args
     args = parser.parse_args()
@@ -103,10 +105,18 @@ def parse_args():
 def main(args):
     gmt = time.gmtime()
     ts = calendar.timegm(gmt)
-    run_id = args.base_table_name+"_"+args.target_table_name+"_"+ str(ts)
+    run_prefix= args.base_table_name+"_"+args.target_table_name+"_"
+    run_id =run_prefix+ str(ts)
     drift_analysis =Drift_Analysis_User()
-
-    df_output, drift_result = drift_analysis.analyze_drift(limit=args.limit,base_table_name = args.base_table_name,target_table_name=args.target_table_name, base_dt_from=args.base_dt_from, base_dt_to=args.base_dt_to, target_dt_from=args.target_dt_from, target_dt_to=args.target_dt_to, bin=args.bin, concurrent_run=args.concurrent_run, drift_threshold = args.drift_threshold)
+    #Check if last run exists for pair of table to increase
+    target_dt_from = args.target_dt_from
+    target_dt_to= args.target_dt_to
+    if args.target_dt_shift_step_size != "None":
+        last_run = drift_analysis.query("let last_run_id = "+args.drift_result_table+"|where run_id like '"+run_prefix+"'| summarize max_run = max(run_id); "+args.drift_result_table+"|where run_id == toscalar(last_run_id)")     
+        if last_run.shape[0]>0:
+            target_dt_from = max(last_run["target_end_date"])
+            target_dt_to= pd.date_range(target_dt_from,periods=2).format()[-1]
+    df_output, drift_result = drift_analysis.analyze_drift(limit=args.limit,base_table_name = args.base_table_name,target_table_name=args.target_table_name, base_dt_from=args.base_dt_from, base_dt_to=args.base_dt_to, target_dt_from=target_dt_from, target_dt_to=target_dt_to, bin=args.bin, concurrent_run=args.concurrent_run, drift_threshold = args.drift_threshold)
     print(drift_result)
     df_output['run_id'] = run_id
     df_output['base_start_date']=pd.to_datetime(args.base_dt_from)
@@ -139,10 +149,18 @@ if __name__ == "__main__":
         name="drift_analysis_job",
         description="Environment created from a Docker image plus Conda environment.",
     )
+    if target_dt_shift_step_size is not None:
+
+        cmd="python job_file.py --target_dt_shift_step_size ${{inputs.target_dt_shift_step_size}}  --base_table_name ${{inputs.base_table_name}} --target_table_name ${{inputs.target_table_name}} --base_dt_from ${{inputs.base_dt_from}} --base_dt_to ${{inputs.base_dt_to}} --target_dt_from ${{inputs.target_dt_from}} --target_dt_to ${{inputs.target_dt_to}} --bin ${{inputs.bin}} --limit ${{inputs.limit}} --drift_threshold ${{inputs.drift_threshold}} --drift_result_table ${{inputs.drift_result_table}}"
+        inputs={"target_dt_shift_step_size":target_dt_shift_step_size, "base_table_name": base_table_name, "target_table_name": target_table_name, "base_dt_from":base_dt_from, "base_dt_to": base_dt_to,"target_dt_from": target_dt_from, "target_dt_to":target_dt_to, "bin":bin, "limit":limit, "concurrent_run":concurrent_run,  "drift_threshold":drift_threshold, "drift_result_table":drift_result_table}
+    else:
+        cmd="python job_file.py --base_table_name ${{inputs.base_table_name}} --target_table_name ${{inputs.target_table_name}} --base_dt_from ${{inputs.base_dt_from}} --base_dt_to ${{inputs.base_dt_to}} --target_dt_from ${{inputs.target_dt_from}} --target_dt_to ${{inputs.target_dt_to}} --bin ${{inputs.bin}} --limit ${{inputs.limit}} --drift_threshold ${{inputs.drift_threshold}} --drift_result_table ${{inputs.drift_result_table}}"
+        inputs={"base_table_name": base_table_name, "target_table_name": target_table_name, "base_dt_from":base_dt_from, "base_dt_to": base_dt_to,"target_dt_from": target_dt_from, "target_dt_to":target_dt_to, "bin":bin, "limit":limit, "concurrent_run":concurrent_run,  "drift_threshold":drift_threshold, "drift_result_table":drift_result_table}
+
     job = command(
     code=".tmp",  # local path where the code is stored
-    command="python job_file.py --base_table_name ${{inputs.base_table_name}} --target_table_name ${{inputs.target_table_name}} --base_dt_from ${{inputs.base_dt_from}} --base_dt_to ${{inputs.base_dt_to}} --target_dt_from ${{inputs.target_dt_from}} --target_dt_to ${{inputs.target_dt_to}} --bin ${{inputs.bin}} --limit ${{inputs.limit}} --drift_threshold ${{inputs.drift_threshold}} --drift_result_table ${{inputs.drift_result_table}}",
-    inputs={"base_table_name": base_table_name, "target_table_name": target_table_name, "base_dt_from":base_dt_from, "base_dt_to": base_dt_to,"target_dt_from": target_dt_from, "target_dt_to":target_dt_to, "bin":bin, "limit":limit, "concurrent_run":concurrent_run,  "drift_threshold":drift_threshold, "drift_result_table":drift_result_table},
+    command= cmd,
+    inputs = inputs,
     environment=env_docker_conda,
     compute=compute_name,
     display_name=experiment_name    # description,
@@ -153,10 +171,8 @@ if __name__ == "__main__":
         job()
     pipeline_job = schedule_pipeline()
     pipeline_job.settings.default_compute=compute_name
-    if cron_schedule is not None:
-        # create a cron schedule start from current time and fire at minute 0,10 of every hour with PACIFIC STANDARD TIME timezone
-        pipeline_job.schedule = cron_schedule
-
+    if job_cron_schedule is not None:
+        pipeline_job.schedule = job_cron_schedule
 
     ml_client.jobs.create_or_update(pipeline_job,experiment_name=experiment_name)
     shutil.rmtree(".tmp")
